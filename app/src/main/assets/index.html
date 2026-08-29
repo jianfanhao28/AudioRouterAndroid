@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<title>TUTTI REMOTE · V2</title>
+<style>
+:root{
+  --bg:#f5f5f7;--ink:#111214;--secondary:#6e7077;--glass:rgba(255,255,255,.58);
+  --glass2:rgba(255,255,255,.42);--stroke:rgba(20,20,25,.09);--blue:#007aff;
+  --green:#27ae60;--shadow:0 24px 70px rgba(25,30,40,.10);
+  --ease-out:cubic-bezier(.23,1,.32,1);--ease-io:cubic-bezier(.77,0,.175,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,sans-serif;color:var(--ink)}
+body{
+  background:
+    radial-gradient(900px 500px at 8% -10%,#dceaff 0,transparent 62%),
+    radial-gradient(800px 500px at 100% 0%,#eadfff 0,transparent 58%),
+    var(--bg);
+  overflow-x:hidden;
+}
+body.dark{--bg:#090a0c;--ink:#f5f5f7;--secondary:#9b9ca3;--glass:rgba(30,31,35,.62);--glass2:rgba(30,31,35,.46);--stroke:rgba(255,255,255,.10);--shadow:0 24px 80px rgba(0,0,0,.38)}
+button,input{font:inherit}
+button{cursor:pointer}
+.shell{width:min(100% - 32px, 1440px);margin:auto;padding:clamp(14px,2.2vw,30px) 0 34px}
+.topbar{
+  position:sticky;top:12px;z-index:5;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px 10px 16px;border:1px solid rgba(255,255,255,.65);border-radius:24px;
+  background:var(--glass);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+  box-shadow:0 12px 40px rgba(0,0,0,.07)
+}
+.brand{display:flex;align-items:center;gap:11px}.brandMark{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#fff,#d9dde4);display:grid;place-items:center;box-shadow:inset 0 1px #fff,0 7px 18px #0001}
+.brandMark i{width:16px;height:16px;border:2.7px solid #111;border-radius:50%;position:relative}.brandMark i:after{content:"";position:absolute;width:4px;height:4px;border-radius:50%;background:#111;left:4px;top:4px}
+.title{font-weight:720;font-size:16px;letter-spacing:-.02em}.caption{font-size:11px;color:var(--secondary);margin-top:1px}
+.topActions{display:flex;gap:8px}.glassBtn{height:38px;min-width:38px;padding:0 13px;border:1px solid var(--stroke);border-radius:13px;background:var(--glass2);color:var(--ink);box-shadow:inset 0 1px #ffffff50;transition:transform 140ms var(--ease-out),background 180ms ease}.glassBtn:active{transform:scale(.97)}
+.connection{display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:999px;background:var(--glass2);border:1px solid var(--stroke);font-size:12px;font-weight:600}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px #27ae6020}
+.layout{display:grid;grid-template-columns:minmax(300px,31%) minmax(0,1fr);gap:clamp(14px,1.8vw,22px);margin-top:clamp(14px,2vw,22px)}
+.glass{
+  border:1px solid rgba(255,255,255,.7);background:var(--glass);backdrop-filter:blur(30px) saturate(170%);-webkit-backdrop-filter:blur(30px) saturate(170%);
+  box-shadow:var(--shadow)
+}
+.master{border-radius:32px;padding:25px;min-height:670px;display:flex;flex-direction:column}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--secondary)}
+.masterDial{height:300px;display:grid;place-items:center;position:relative}
+.arc{width:228px;height:228px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(from 215deg,var(--blue) 0 76%,#dfe1e5 76% 82%,transparent 82% 100%);filter:drop-shadow(0 15px 30px #007aff1a);position:relative}
+.dark .arc{background:conic-gradient(from 215deg,var(--blue) 0 76%,#35373d 76% 82%,transparent 82% 100%)}
+.arc:before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--stroke)}
+.value{position:relative;text-align:center}.num{font-size:67px;line-height:.9;font-weight:700;letter-spacing:-.055em}.unit{font-size:13px;color:var(--secondary);margin-top:8px}
+.rangeWrap{position:relative}.rangeWrap input{width:100%;accent-color:var(--blue);height:4px}
+.rangeLabels{display:flex;justify-content:space-between;font-size:10px;color:var(--secondary);margin-top:8px}
+.mainPlay{margin-top:22px;display:grid;grid-template-columns:1fr 54px;gap:8px}
+.play{height:50px;border:0;border-radius:17px;background:var(--blue);color:#fff;font-weight:650;box-shadow:0 10px 25px #007aff28;transition:transform 140ms var(--ease-out)}.play:active{transform:scale(.97)}
+.iconBtn{border:1px solid var(--stroke);border-radius:17px;background:var(--glass2);color:var(--ink);font-size:18px;transition:transform 140ms var(--ease-out)}.iconBtn:active{transform:scale(.97)}
+.now{margin-top:auto;border-top:1px solid var(--stroke);padding-top:18px}.nowRow{display:flex;align-items:center;gap:12px;margin-top:10px}
+.album{width:48px;height:48px;border-radius:14px;background:radial-gradient(circle at 30% 25%,#fff8 0 5%,transparent 6%),linear-gradient(135deg,#17181c,#6f7279 45%,#e9e9eb);box-shadow:0 8px 20px #0002}
+.trackName{font-weight:650;font-size:14px}.trackSub{font-size:11px;color:var(--secondary);margin-top:4px}
+.right{padding:23px;border-radius:32px}.sectionHead{display:flex;align-items:end;justify-content:space-between;margin-bottom:15px}.sectionHead h2{font-size:23px;letter-spacing:-.04em;margin:0}.sectionHead p{margin:5px 0 0;color:var(--secondary);font-size:12px}
+.deviceList{display:grid;gap:10px}
+.device{animation:deviceIn 420ms var(--ease-out) both;}@keyframes deviceIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+  position:relative;padding:18px;border:1px solid var(--stroke);border-radius:23px;background:var(--glass2);
+  transition:transform 180ms var(--ease-out),background 180ms ease,box-shadow 180ms ease
+}.device:active{transform:scale(.992)}
+.deviceHead{display:flex;align-items:center;justify-content:space-between}.identity{display:flex;align-items:center;gap:11px}
+.speakerIcon{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#fff,#e3e5e9);display:grid;place-items:center;box-shadow:inset 0 1px #fff,0 5px 15px #0001}.dark .speakerIcon{background:linear-gradient(145deg,#45474f,#25272d)}
+.deviceName{font-size:14px;font-weight:680}.deviceMeta{font-size:11px;color:var(--secondary);margin-top:3px}.online{color:var(--green)}
+.more{width:36px;height:36px;border:0;background:transparent;color:var(--secondary);border-radius:12px;font-size:20px}.more:active{background:var(--glass2)}
+.volArea{display:grid;grid-template-columns:30px 1fr 42px;align-items:center;gap:10px;margin-top:17px}.volLabel,.volNum{font-size:10px;color:var(--secondary)}.volNum{text-align:right;font-weight:650}
+.volArea input{width:100%;accent-color:var(--blue);height:4px}
+.tags{display:flex;gap:6px;margin-top:12px}.tag{font-size:10px;color:var(--secondary);padding:5px 8px;border-radius:8px;border:1px solid var(--stroke);background:var(--glass2)}
+.bottomGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.deviceEditorBackdrop{position:fixed;inset:0;background:#0005;opacity:0;pointer-events:none;z-index:40;transition:opacity 220ms ease}
+.deviceEditorBackdrop.show{opacity:1;pointer-events:auto}
+.deviceEditor{position:absolute;left:50%;bottom:0;width:min(620px,100%);transform:translate(-50%,105%) scale(.98);padding:14px 20px 24px;border-radius:30px 30px 0 0;background:rgba(248,249,251,.90);color:#111;backdrop-filter:blur(35px) saturate(180%);box-shadow:0 -25px 80px #0003;transition:transform 380ms var(--ease-out)}
+.dark .deviceEditor{background:rgba(28,29,34,.93);color:#fff}
+.deviceEditorBackdrop.show .deviceEditor{transform:translate(-50%,0) scale(1)}
+.editorTop{display:flex;justify-content:space-between;align-items:center}.editorTop h3{margin:4px 0 0;font-size:21px;letter-spacing:-.04em}
+.editorBlock{padding:18px 0;border-bottom:1px solid var(--stroke)}.editorBlock label{font-size:13px;font-weight:600}
+.textInput{display:block;width:100%;margin-top:10px;border:1px solid var(--stroke);outline:none;border-radius:14px;background:var(--glass2);color:var(--ink);padding:13px 14px;font-size:14px}.textInput:focus{box-shadow:0 0 0 3px #007aff22;border-color:#007aff55}
+.editorLabel{display:flex;justify-content:space-between;align-items:center}.editorLabel strong{font-size:13px;color:var(--blue)}
+.editorBlock input[type=range]{margin-top:14px;width:100%;accent-color:var(--blue)}
+.editorRow{display:flex;justify-content:space-between;align-items:center;padding:17px 0}.editorRow b{font-size:13px}.editorRow small{display:block;color:var(--secondary);font-size:11px;margin-top:3px}
+.switch{width:50px;height:30px;border:0;border-radius:999px;background:#b7bac1;padding:3px;transition:.25s}.switch i{display:block;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0003;transition:transform 250ms var(--ease-out)}.switch.on{background:var(--blue)}.switch.on i{transform:translateX(20px)}
+.device.editing{box-shadow:0 0 0 2px #007aff33,0 18px 50px #007aff12}
+@media(max-width:850px){.deviceEditor{padding-bottom:calc(22px + env(safe-area-inset-bottom))}}
+.outputSummaryCard{display:flex;align-items:center;gap:12px;padding:17px;border:1px solid var(--stroke);border-radius:22px;background:var(--glass2);cursor:pointer;transition:transform 180ms var(--ease-out),background 180ms ease}.outputSummaryCard:active{transform:scale(.985)}.summaryIcon{width:42px;height:42px;border-radius:14px;background:var(--blue);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px #007aff28}.outputSummaryCard b{font-size:14px}.outputSummaryCard span{display:block;color:var(--secondary);font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.summaryChevron{margin-left:auto;color:var(--secondary);font-size:24px;font-weight:300}.tile{border:1px solid var(--stroke);border-radius:21px;background:var(--glass2);padding:16px;transition:transform 140ms var(--ease-out)}.tile:active{transform:scale(.985)}
+.tile b{font-size:13px}.tile span{display:block;color:var(--secondary);font-size:11px;margin-top:4px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px) scale(.97);opacity:0;pointer-events:none;padding:11px 15px;border-radius:15px;color:#fff;background:rgba(20,21,25,.84);backdrop-filter:blur(18px);box-shadow:0 15px 45px #0003;transition:transform 230ms var(--ease-out),opacity 180ms ease;z-index:30;font-size:12px}.toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.sheetBackdrop{position:fixed;inset:0;background:#0005;opacity:0;pointer-events:none;transition:opacity 220ms ease;z-index:20}.sheetBackdrop.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:50%;bottom:0;width:min(620px,100%);transform:translate(-50%,105%) scale(.98);border-radius:30px 30px 0 0;padding:14px 20px 22px;background:rgba(248,249,251,.88);color:#111;backdrop-filter:blur(35px) saturate(180%);box-shadow:0 -25px 80px #0003;transition:transform 360ms var(--ease-out)}.dark .sheet{background:rgba(28,29,34,.91);color:#fff}.sheetBackdrop.show .sheet{transform:translate(-50%,0) scale(1)}
+.handle{width:38px;height:5px;border-radius:5px;background:#aaa5;margin:0 auto 16px}.sheet h3{margin:0 0 6px;font-size:19px;letter-spacing:-.03em}.sheetSub{font-size:12px;color:var(--secondary);margin-bottom:10px}.setting{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--stroke);font-size:13px}.setting small{display:block;color:var(--secondary);margin-top:3px}.done{width:100%;height:46px;border:0;border-radius:16px;background:var(--blue);color:#fff;font-weight:650;margin-top:16px}
+
+/* 自动适配屏幕比例：平板横屏优先，比例越宽，主控区域越舒展 */
+@media (min-width:851px) and (min-aspect-ratio: 16/10){
+  .layout{grid-template-columns:minmax(330px,28vw) minmax(0,1fr)}
+  .master{min-height:clamp(560px,72vh,760px)}
+}
+@media (min-width:851px) and (max-aspect-ratio: 16/10){
+  .layout{grid-template-columns:minmax(300px,32vw) minmax(0,1fr)}
+  .master{min-height:clamp(560px,76vh,700px)}
+}
+@media (min-width:851px) and (max-aspect-ratio: 4/3){
+  .shell{width:min(100% - 28px,1200px)}
+  .layout{grid-template-columns:minmax(280px,34%) minmax(0,1fr)}
+}
+@media(max-width:850px){
+ .shell{width:calc(100% - 20px);padding:10px 0 24px}
+ .layout{grid-template-columns:1fr}
+ .master{min-height:auto}
+ .masterDial{height:245px}
+ .right{padding:18px}
+ .topbar{top:7px}
+}
+@media (orientation:portrait) and (min-width:600px){
+ .layout{grid-template-columns:1fr}
+ .master{min-height:auto}
+ .masterDial{height:280px}
+}
+@media (orientation:landscape) and (min-width:851px){
+ .topbar{min-height:58px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-transparency:reduce){.glass,.topbar,.sheet{backdrop-filter:none;background:var(--bg)}}
+</style>
+<style>
+.deviceEditorBackdrop{position:fixed;inset:0;background:#0005;opacity:0;pointer-events:none;z-index:40;transition:opacity 220ms ease}.deviceEditorBackdrop.show{opacity:1;pointer-events:auto}
+.deviceEditor{position:absolute;left:50%;bottom:0;width:min(620px,100%);transform:translate(-50%,105%) scale(.98);padding:14px 20px 24px;border-radius:30px 30px 0 0;background:rgba(248,249,251,.90);color:#111;backdrop-filter:blur(35px) saturate(180%);box-shadow:0 -25px 80px #0003;transition:transform 380ms var(--ease-out)}
+.dark .deviceEditor{background:rgba(28,29,34,.93);color:#fff}.deviceEditorBackdrop.show .deviceEditor{transform:translate(-50%,0) scale(1)}
+.editorTop{display:flex;justify-content:space-between;align-items:center}.editorTop h3{margin:4px 0 0;font-size:21px;letter-spacing:-.04em}
+.editorBlock{padding:18px 0;border-bottom:1px solid var(--stroke)}.editorBlock label{font-size:13px;font-weight:600}.textInput{display:block;width:100%;margin-top:10px;border:1px solid var(--stroke);outline:none;border-radius:14px;background:var(--glass2);color:var(--ink);padding:13px 14px;font-size:14px}.textInput:focus{box-shadow:0 0 0 3px #007aff22;border-color:#007aff55}
+.editorLabel{display:flex;justify-content:space-between;align-items:center}.editorLabel strong{font-size:13px;color:var(--blue)}.editorBlock input[type=range]{margin-top:14px;width:100%;accent-color:var(--blue);height:4px}
+.editorRow{display:flex;justify-content:space-between;align-items:center;padding:17px 0}.editorRow b{font-size:13px}.editorRow small{display:block;color:var(--secondary);font-size:11px;margin-top:3px}
+.switch{width:50px;height:30px;border:0;border-radius:999px;background:#b7bac1;padding:3px;transition:.25s}.switch i{display:block;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0003;transition:transform 250ms var(--ease-out)}.switch.on{background:var(--blue)}.switch.on i{transform:translateX(20px)}
+.device{animation:deviceIn 420ms var(--ease-out) both}@keyframes deviceIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+</style></head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="brand"><div class="brandMark"><i></i></div><div><div class="title">音频路由</div><div class="caption">By JIAN</div></div></div>
+  <div style="display:flex;align-items:center;gap:8px"><div class="connection"><span class="pulse"></span><span id="connectionText">3 台设备已连接</span></div><div class="topActions"><button class="glassBtn" id="theme" aria-label="切换夜晚/白色模式" title="切换夜晚/白色模式">☾</button><button class="glassBtn" id="scan">＋</button></div></div>
+</header>
+
+<main class="layout">
+<section class="master glass">
+  <div class="eyebrow">MASTER</div>
+  <div class="masterDial"><div class="arc"><div class="value"><div class="num" id="masterValue">78</div><div class="unit">MASTER VOLUME</div></div></div></div>
+  <div class="rangeWrap"><input id="master" type="range" min="0" max="100" value="78"><div class="rangeLabels"><span>0</span><span>100</span></div></div>
+  <div class="mainPlay"><button class="play" id="play">▶︎ 播放</button><button class="iconBtn" id="mute">⌁</button></div>
+  <div class="now">
+  <div class="eyebrow">NOW PLAYING</div>
+  <div class="nowRow">
+    <div class="album" id="albumArt"></div>
+    <div style="min-width:0">
+      <div class="trackName" id="trackTitle">Ambient Session</div>
+      <div class="trackSub" id="trackArtist">Apple Music · 等待媒体信息</div>
+    </div>
+    <span style="margin-left:auto;color:var(--secondary)">•••</span>
+  </div>
+  <div style="margin-top:13px">
+    <input id="progress" type="range" min="0" max="100" value="42" style="width:100%;accent-color:var(--blue);height:3px">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--secondary);margin-top:5px"><span id="elapsed">1:42</span><span id="duration">3:20</span></div>
+  </div>
+  <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-top:9px">
+    <button class="iconBtn" style="width:38px;height:34px;border-radius:12px" id="prev">‹</button>
+    <button class="play" style="height:38px;width:72px;border-radius:13px" id="mediaPlay">▶︎</button>
+    <button class="iconBtn" style="width:38px;height:34px;border-radius:12px" id="next">›</button>
+  </div>
+</div>
+</section>
+
+<section class="right glass">
+  <div class="sectionHead">
+  <div><h2>音频输出</h2><p id="outputSummary">3 台设备 · 已同步</p></div>
+  <button class="glassBtn" id="openSpeakers">管理</button>
+</div>
+<div class="outputSummaryCard" id="outputCard">
+  <div class="summaryIcon">◉</div>
+  <div style="min-width:0"><b>Party</b><span>Living Room · Bedroom · Balcony</span></div>
+  <div class="summaryChevron">›</div>
+</div>
+<div class="bottomGrid">
+  <button class="tile" id="calibrate"><b>同步校准</b><span>自动检测各设备延迟</span></button>
+  <button class="tile" id="addDevice"><b>添加设备</b><span>扫描附近 Bluetooth 音响</span></button>
+</div>
+<div class="deviceList" id="list" style="display:none"></div>
+</section>
+</main>
+</div>
+
+<div class="sheetBackdrop" id="backdrop"><section class="sheet" id="sheet"><div class="handle"></div><h3 id="sheetTitle">Living Room</h3><div class="sheetSub">输出设备设置</div>
+<div class="setting"><div>延迟补偿<small>让多个音响同时到达</small></div><strong id="delayValue">120 ms</strong></div>
+<div class="setting"><div>声道平衡<small>左右声道中心</small></div><strong>中央</strong></div>
+<div class="setting"><div>同步锁定<small>跟随 Master 播放时钟</small></div><strong style="color:var(--green)">开启</strong></div>
+<button class="done" id="done">完成</button></section></div>
+
+<div class="deviceEditorBackdrop" id="deviceEditorBackdrop">
+ <section class="deviceEditor">
+  <div class="handle"></div>
+  <div class="editorTop"><div><div class="eyebrow">OUTPUT DEVICE</div><h3 id="editorName">设备设置</h3></div><button class="glassBtn" id="editorClose">×</button></div>
+  <div class="editorBlock">
+   <label>设备名称</label>
+   <input id="nameInput" class="textInput" maxlength="32" placeholder="例如：客厅音响">
+  </div>
+  <div class="editorBlock">
+   <div class="editorLabel"><label>播放延迟</label><strong><span id="delayNum">120</span> ms</strong></div>
+   <input id="delayInput" type="range" min="0" max="1000" step="10" value="120">
+   <div class="rangeLabels"><span>0 ms</span><span>1000 ms</span></div>
+  </div>
+  <div class="editorRow"><div><b>同步锁定</b><small>跟随 Master 播放时钟</small></div><button class="switch on" id="syncSwitch"><i></i></button></div>
+  <button class="done" id="saveDevice">保存设置</button>
+ </section>
+</div>
+
+<div class="deviceEditorBackdrop" id="deviceEditorBackdrop">
+<section class="deviceEditor">
+<div class="handle"></div>
+<div class="editorTop"><div><div class="eyebrow">OUTPUT DEVICE</div><h3 id="editorName">设备设置</h3></div><button class="glassBtn" id="editorClose">×</button></div>
+<div class="editorBlock"><label>设备名称</label><input id="nameInput" class="textInput" maxlength="32" placeholder="例如：客厅音响"></div>
+<div class="editorBlock"><div class="editorLabel"><label>播放延迟</label><strong><span id="delayNum">120</span> ms</strong></div><input id="delayInput" type="range" min="0" max="1000" step="10" value="120"><div class="rangeLabels"><span>0 ms</span><span>1000 ms</span></div></div>
+<div class="editorRow"><div><b>同步锁定</b><small>跟随 Master 播放时钟</small></div><button class="switch on" id="syncSwitch"><i></i></button></div>
+<button class="done" id="saveDevice">保存设置</button>
+</section></div><div class="toast" id="toast"></div>
+
+<script>
+const devices=[
+ {name:"Living Room",model:"JBL Speaker",vol:82,delay:120},
+ {name:"Bedroom",model:"Sony Speaker",vol:64,delay:180},
+ {name:"Balcony",model:"Bose Speaker",vol:71,delay:235}
+];
+const list=document.getElementById("list"), toast=document.getElementById("toast");
+function showToast(t){toast.textContent=t;toast.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove("show"),1500)}
+function render(){
+ list.innerHTML=devices.map((d,i)=>`
+ <article class="device">
+  <div class="deviceHead">
+   <div class="identity"><div class="speakerIcon">🔊</div><div><div class="deviceName">${d.name}</div><div class="deviceMeta"><span class="online">● Connected</span> · ${d.model}</div></div></div>
+   <button class="more" onclick="openDeviceEditor(${i})">•••</button>
+  </div>
+  <div class="volArea"><span class="volLabel">VOL</span><input type="range" min="0" max="100" value="${d.vol}" data-i="${i}"><span class="volNum" id="vol${i}">${d.vol}%</span></div>
+  <div class="tags"><span class="tag">Delay ${d.delay} ms</span><span class="tag">A2DP</span><span class="tag">Synced</span></div>
+ </article>`).join("");
+ document.querySelectorAll("[data-i]").forEach(el=>el.addEventListener("input",e=>{const i=+e.target.dataset.i;devices[i].vol=+e.target.value;document.getElementById("vol"+i).textContent=devices[i].vol+"%";}));
+}
+
+let editingIndex=-1;
+const editorBackdrop=document.getElementById("deviceEditorBackdrop");
+const nameInput=document.getElementById("nameInput");
+const delayInput=document.getElementById("delayInput");
+const delayNum=document.getElementById("delayNum");
+const syncSwitch=document.getElementById("syncSwitch");
+function openDeviceEditor(i){
+ editingIndex=i;
+ const d=devices[i];
+ document.getElementById("editorName").textContent=d.name;
+ nameInput.value=d.name;
+ delayInput.value=d.delay;
+ delayNum.textContent=d.delay;
+ syncSwitch.classList.add("on");
+ editorBackdrop.classList.add("show");
+}
+function closeDeviceEditor(){editorBackdrop.classList.remove("show");editingIndex=-1}
+delayInput.oninput=()=>delayNum.textContent=delayInput.value;
+syncSwitch.onclick=()=>syncSwitch.classList.toggle("on");
+document.getElementById("editorClose").onclick=closeDeviceEditor;
+editorBackdrop.onclick=e=>{if(e.target===editorBackdrop)closeDeviceEditor()};
+document.getElementById("saveDevice").onclick=()=>{
+ if(editingIndex<0)return;
+ const name=nameInput.value.trim()||"未命名设备";
+ devices[editingIndex].name=name;
+ devices[editingIndex].delay=+delayInput.value;
+ render();
+ closeDeviceEditor();
+ showToast("设备设置已保存");
+};
+
+function openSettings(i){document.getElementById("sheetTitle").textContent=devices[i].name;document.getElementById("delayValue").textContent=devices[i].delay+" ms";document.getElementById("backdrop").classList.add("show")}
+function closeSheet(){document.getElementById("backdrop").classList.remove("show")}
+render();
+
+
+const listEl=document.getElementById("list");
+const openSpeakers=document.getElementById("openSpeakers");
+const outputCard=document.getElementById("outputCard");
+function toggleSpeakers(){
+  const open=listEl.style.display!=="none";
+  listEl.style.display=open?"none":"grid";
+  openSpeakers.textContent=open?"管理":"收起";
+  document.getElementById("outputSummary").textContent=open?"3 台设备 · 已同步":"正在管理 3 台输出设备";
+}
+openSpeakers.onclick=toggleSpeakers;
+outputCard.onclick=toggleSpeakers;
+
+// Now Playing UI bridge: the Android version will feed these fields from MediaSession.
+// HTML demo uses a local simulated state so the interface can be previewed immediately.
+const mediaPlay=document.getElementById("mediaPlay");
+mediaPlay.addEventListener("click",()=>{
+  mediaPlay.textContent=mediaPlay.textContent.includes("▶")?"Ⅱ":"▶︎";
+  showToast(mediaPlay.textContent.includes("Ⅱ")?"正在播放":"已暂停");
+});
+document.getElementById("prev").onclick=()=>showToast("上一首 · 由 Android MediaSession 控制");
+document.getElementById("next").onclick=()=>showToast("下一首 · 由 Android MediaSession 控制");
+document.getElementById("progress").oninput=e=>{
+  const pct=+e.target.value, total=200, sec=Math.round(total*pct/100);
+  document.getElementById("elapsed").textContent=Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");
+};
+
+document.getElementById("master").addEventListener("input",e=>document.getElementById("masterValue").textContent=e.target.value);
+document.getElementById("play").addEventListener("pointerdown",e=>e.currentTarget.style.transform="scale(.97)");
+document.getElementById("play").addEventListener("pointerup",e=>{e.currentTarget.style.transform="";e.currentTarget.textContent=e.currentTarget.textContent.includes("播放")?"Ⅱ 暂停":"▶︎ 播放";showToast(e.currentTarget.textContent.includes("暂停")?"开始播放":"已暂停")});
+document.getElementById("mute").onclick=e=>{e.currentTarget.classList.toggle("active");showToast(e.currentTarget.classList.contains("active")?"全部静音":"取消静音")};
+document.getElementById("theme").onclick=()=>{
+ document.body.classList.toggle("dark");
+ const dark=document.body.classList.contains("dark");
+ document.getElementById("theme").textContent=dark?"☀":"☾";
+ localStorage.setItem("audioRouterTheme",dark?"dark":"light");
+};
+if(localStorage.getItem("audioRouterTheme")==="dark"){
+ document.body.classList.add("dark");
+ document.getElementById("theme").textContent="☀";
+}
+document.getElementById("done").onclick=closeSheet;
+document.getElementById("backdrop").onclick=e=>{if(e.target===e.currentTarget)closeSheet()};
+document.getElementById("groupBtn").onclick=()=>showToast("Party 分组已选中 · 3 台设备");
+document.getElementById("calibrate").onclick=()=>showToast("正在检测延迟 · 建议 120 / 180 / 235 ms");
+document.getElementById("scan").onclick=()=>showToast("正在扫描附近 Bluetooth 设备…");
+document.getElementById("addDevice").onclick=()=>showToast("扫描附近 Bluetooth 音响…");
+</script>
+<script>
+let editingIndex=-1;
+const editorBackdrop=document.getElementById("deviceEditorBackdrop"),nameInput=document.getElementById("nameInput"),delayInput=document.getElementById("delayInput"),delayNum=document.getElementById("delayNum"),syncSwitch=document.getElementById("syncSwitch");
+function openDeviceEditor(i){editingIndex=i;const d=devices[i];document.getElementById("editorName").textContent=d.name;nameInput.value=d.name;delayInput.value=d.delay;delayNum.textContent=d.delay;syncSwitch.classList.add("on");editorBackdrop.classList.add("show")}
+function closeDeviceEditor(){editorBackdrop.classList.remove("show");editingIndex=-1}
+delayInput.oninput=()=>delayNum.textContent=delayInput.value;
+syncSwitch.onclick=()=>syncSwitch.classList.toggle("on");
+document.getElementById("editorClose").onclick=closeDeviceEditor;
+editorBackdrop.onclick=e=>{if(e.target===editorBackdrop)closeDeviceEditor()};
+document.getElementById("saveDevice").onclick=()=>{if(editingIndex<0)return;devices[editingIndex].name=nameInput.value.trim()||"未命名设备";devices[editingIndex].delay=+delayInput.value;render();closeDeviceEditor();showToast("设备设置已保存")};
+</script></body>
+</html>
