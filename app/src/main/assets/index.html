@@ -139,7 +139,7 @@ button{cursor:pointer}
 <div class="shell">
 <header class="topbar">
   <div class="brand"><div class="brandMark"><i></i></div><div><div class="title">音频路由</div><div class="caption">By JIAN</div></div></div>
-  <div style="display:flex;align-items:center;gap:8px"><div class="connection"><span class="pulse"></span><span id="connectionText">3 台设备已连接</span></div><div class="topActions"><button class="glassBtn" id="theme" aria-label="切换夜晚/白色模式" title="切换夜晚/白色模式">☾</button><button class="glassBtn" id="scan">＋</button></div></div>
+  <div style="display:flex;align-items:center;gap:8px"><div class="connection"><span class="pulse"></span><span id="connectionText">正在检测设备…</span></div><div class="topActions"><button class="glassBtn" id="theme" aria-label="切换夜晚/白色模式" title="切换夜晚/白色模式">☾</button><button class="glassBtn" id="scan">＋</button></div></div>
 </header>
 
 <main class="layout">
@@ -287,7 +287,7 @@ function toggleSpeakers(){
   const open=listEl.style.display!=="none";
   listEl.style.display=open?"none":"grid";
   openSpeakers.textContent=open?"管理":"收起";
-  document.getElementById("outputSummary").textContent=open?"3 台设备 · 已同步":"正在管理 3 台输出设备";
+  document.getElementById("outputSummary").textContent=open?`${devices.length} 台设备 · 已检测`:`正在管理 ${devices.length} 台输出设备`;
 }
 openSpeakers.onclick=toggleSpeakers;
 outputCard.onclick=toggleSpeakers;
@@ -296,11 +296,11 @@ outputCard.onclick=toggleSpeakers;
 // HTML demo uses a local simulated state so the interface can be previewed immediately.
 const mediaPlay=document.getElementById("mediaPlay");
 mediaPlay.addEventListener("click",()=>{
-  mediaPlay.textContent=mediaPlay.textContent.includes("▶")?"Ⅱ":"▶︎";
-  showToast(mediaPlay.textContent.includes("Ⅱ")?"正在播放":"已暂停");
+  if(window.NativeBridge){ NativeBridge.playPause(); setTimeout(refreshNativeState,300); }
+  else { mediaPlay.textContent=mediaPlay.textContent.includes("▶")?"Ⅱ":"▶︎"; showToast(mediaPlay.textContent.includes("Ⅱ")?"正在播放":"已暂停"); }
 });
-document.getElementById("prev").onclick=()=>showToast("上一首 · 由 Android MediaSession 控制");
-document.getElementById("next").onclick=()=>showToast("下一首 · 由 Android MediaSession 控制");
+document.getElementById("prev").onclick=()=>{ if(window.NativeBridge){NativeBridge.previous();setTimeout(refreshNativeState,300)}else showToast("上一首 · Android MediaSession") };
+document.getElementById("next").onclick=()=>{ if(window.NativeBridge){NativeBridge.next();setTimeout(refreshNativeState,300)}else showToast("下一首 · Android MediaSession") };
 document.getElementById("progress").oninput=e=>{
   const pct=+e.target.value, total=200, sec=Math.round(total*pct/100);
   document.getElementById("elapsed").textContent=Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");
@@ -308,7 +308,7 @@ document.getElementById("progress").oninput=e=>{
 
 document.getElementById("master").addEventListener("input",e=>document.getElementById("masterValue").textContent=e.target.value);
 document.getElementById("play").addEventListener("pointerdown",e=>e.currentTarget.style.transform="scale(.97)");
-document.getElementById("play").addEventListener("pointerup",e=>{e.currentTarget.style.transform="";e.currentTarget.textContent=e.currentTarget.textContent.includes("播放")?"Ⅱ 暂停":"▶︎ 播放";showToast(e.currentTarget.textContent.includes("暂停")?"开始播放":"已暂停")});
+document.getElementById("play").addEventListener("pointerup",e=>{e.currentTarget.style.transform="";if(window.NativeBridge){NativeBridge.playPause();setTimeout(refreshNativeState,300)}else{e.currentTarget.textContent=e.currentTarget.textContent.includes("播放")?"Ⅱ 暂停":"▶︎ 播放";showToast(e.currentTarget.textContent.includes("暂停")?"开始播放":"已暂停")}});
 document.getElementById("mute").onclick=e=>{e.currentTarget.classList.toggle("active");showToast(e.currentTarget.classList.contains("active")?"全部静音":"取消静音")};
 document.getElementById("theme").onclick=()=>{
  document.body.classList.toggle("dark");
@@ -324,8 +324,8 @@ document.getElementById("done").onclick=closeSheet;
 document.getElementById("backdrop").onclick=e=>{if(e.target===e.currentTarget)closeSheet()};
 document.getElementById("groupBtn").onclick=()=>showToast("Party 分组已选中 · 3 台设备");
 document.getElementById("calibrate").onclick=()=>showToast("正在检测延迟 · 建议 120 / 180 / 235 ms");
-document.getElementById("scan").onclick=()=>showToast("正在扫描附近 Bluetooth 设备…");
-document.getElementById("addDevice").onclick=()=>showToast("扫描附近 Bluetooth 音响…");
+document.getElementById("scan").onclick=()=>{if(window.NativeBridge){NativeBridge.openBluetoothSettings()}else showToast("正在扫描附近 Bluetooth 设备…")};
+document.getElementById("addDevice").onclick=()=>{if(window.NativeBridge){NativeBridge.openBluetoothSettings()}else showToast("扫描附近 Bluetooth 音响…")};
 </script>
 <script>
 let editingIndex=-1;
@@ -336,6 +336,76 @@ delayInput.oninput=()=>delayNum.textContent=delayInput.value;
 syncSwitch.onclick=()=>syncSwitch.classList.toggle("on");
 document.getElementById("editorClose").onclick=closeDeviceEditor;
 editorBackdrop.onclick=e=>{if(e.target===editorBackdrop)closeDeviceEditor()};
+
 document.getElementById("saveDevice").onclick=()=>{if(editingIndex<0)return;devices[editingIndex].name=nameInput.value.trim()||"未命名设备";devices[editingIndex].delay=+delayInput.value;render();closeDeviceEditor();showToast("设备设置已保存")};
+
+function safeSettings(){try{return JSON.parse(localStorage.getItem("audioRouterDeviceSettings")||"{}")}catch(e){return {}}}
+function saveSettings(x){localStorage.setItem("audioRouterDeviceSettings",JSON.stringify(x))}
+function syncNativeOutputs(){
+  if(!window.NativeBridge) return;
+  try{
+    const outputs=JSON.parse(NativeBridge.getConnectedOutputs()||"[]");
+    const settings=safeSettings();
+    devices.length=0;
+    outputs.forEach((o)=>{
+      const key=String(o.id);
+      const saved=settings[key]||{};
+      devices.push({id:o.id,name:saved.name||o.name||"Bluetooth 音响",model:o.type||"Bluetooth",vol:saved.vol??70,delay:saved.delay??0});
+    });
+    document.getElementById("connectionText").textContent=devices.length?`${devices.length} 台设备已连接`:`未检测到 Bluetooth 音频设备`;
+    document.getElementById("outputSummary").textContent=devices.length?`${devices.length} 台设备 · 已检测`:`未检测到 Bluetooth 音频设备`;
+    if(devices.length) render();
+    else list.innerHTML='<div style="padding:34px;text-align:center;border:1px dashed var(--stroke);border-radius:22px;color:var(--secondary);font-size:12px">未检测到已连接的 Bluetooth 音频设备<br><span style="display:block;margin-top:7px;font-size:11px">请先连接音响，再点「添加设备」</span></div>';
+  }catch(e){ console.warn(e) }
+}
+function refreshNativeState(){
+  if(!window.NativeBridge) return;
+  try{
+    syncNativeOutputs();
+    const m=JSON.parse(NativeBridge.getMediaState()||"{}");
+    const title=document.getElementById("trackTitle"), artist=document.getElementById("trackArtist"), art=document.getElementById("albumArt");
+    if(!m.accessEnabled){
+      title.textContent="Apple Music";
+      artist.textContent="点击播放键开启媒体控制权限";
+      art.style.backgroundImage="";
+      return;
+    }
+    if(!m.available){
+      title.textContent="等待 Apple Music 播放";
+      artist.textContent="Apple Music · 未检测到活动播放会话";
+      art.style.backgroundImage="";
+      return;
+    }
+    title.textContent=m.title||"正在播放";
+    artist.textContent=[m.artist,m.album].filter(Boolean).join(" · ")||"Apple Music";
+    if(m.artwork) art.style.backgroundImage=`url("${m.artwork}")`;
+    else art.style.backgroundImage="";
+    const duration=Math.max(1,Number(m.duration||0));
+    const position=Math.max(0,Number(m.position||0));
+    document.getElementById("duration").textContent=formatTime(duration);
+    document.getElementById("elapsed").textContent=formatTime(position);
+    document.getElementById("progress").value=Math.min(100,Math.max(0,position/duration*100));
+    mediaPlay.textContent=m.playing?"Ⅱ":"▶︎";
+    document.getElementById("play").textContent=m.playing?"Ⅱ 暂停":"▶︎ 播放";
+  }catch(e){ console.warn(e) }
+}
+function formatTime(ms){const sec=Math.floor(Number(ms)/1000);return Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0")}
+
+// Persist renamed devices / delay settings while still reflecting actual connection state.
+const oldRender=render;
+render=function(){
+  oldRender();
+  const settings=safeSettings();
+  devices.forEach(d=>{if(d.id!=null)settings[String(d.id)]={name:d.name,delay:d.delay,vol:d.vol}});
+  saveSettings(settings);
+};
+
+// On Android, the native bridge is authoritative. In a normal browser the demo data remains available.
+if(window.NativeBridge){
+  document.querySelector(".now").addEventListener("click",()=>{try{const m=JSON.parse(NativeBridge.getMediaState()||"{}");if(!m.accessEnabled)NativeBridge.openMediaAccess();else if(!m.available)NativeBridge.openAppleMusic()}catch(e){}});
+  setTimeout(refreshNativeState,500);
+  setInterval(refreshNativeState,1200);
+}
+
 </script></body>
 </html>
